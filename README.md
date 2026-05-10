@@ -14,6 +14,12 @@ make
 build/csv_parser
 ```
 
+В Windows при сборке под MinGW итоговый файл будет называться:
+
+```text
+build/csv_parser.exe
+```
+
 ## Запуск
 
 ```bash
@@ -21,6 +27,28 @@ build/csv_parser
 ```
 
 Результат работы печатается в `stdout`.
+
+## Сборка под Windows MinGW
+
+Если используется MinGW/MSYS2, проект можно собрать так:
+
+```bash
+mingw32-make
+```
+
+или напрямую через `gcc`:
+
+```bash
+gcc -Wall -Wextra -O3 -Iinc main.c src/*.c -o build/csv_parser.exe
+```
+
+Пример запуска:
+
+```bash
+./build/csv_parser.exe csv/example_valid.csv
+```
+
+Текущий `Makefile` лучше всего работает в shell-совместимой среде вроде MSYS2/MinGW shell, потому что использует команды `mkdir`, `rm` и shell-цикл в `make test`
 
 ## Фичи проекта
 
