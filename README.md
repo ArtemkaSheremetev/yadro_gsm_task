@@ -4,6 +4,8 @@
 
 ## Сборка
 
+### Linux
+
 ```bash
 make
 ```
@@ -20,17 +22,7 @@ build/csv_parser
 build/csv_parser.exe
 ```
 
-## Запуск
-
-```bash
-./build/csv_parser path/to/file.csv
-```
-
-Результат работы печатается в `stdout`.
-
-## Сборка под Windows MinGW
-
-Если используется MinGW/MSYS2, проект можно собрать так:
+### MinGW / MSYS2
 
 ```bash
 mingw32-make
@@ -42,13 +34,33 @@ mingw32-make
 gcc -Wall -Wextra -O3 -Iinc main.c src/*.c -o build/csv_parser.exe
 ```
 
-Пример запуска:
+### Cygwin
+
+```bash
+make
+```
+
+или напрямую через `gcc`:
+
+```bash
+gcc -Wall -Wextra -O3 -Iinc main.c src/*.c -o build/csv_parser.exe
+```
+
+## Запуск
+
+```bash
+./build/csv_parser path/to/file.csv
+```
+
+Результат работы печатается в `stdout`.
+
+Пример запуска под Windows:
 
 ```bash
 ./build/csv_parser.exe csv/example_valid.csv
 ```
 
-Текущий `Makefile` лучше всего работает в shell-совместимой среде вроде MSYS2/MinGW shell, потому что использует команды `mkdir`, `rm` и shell-цикл в `make test`
+Текущий `Makefile` лучше всего работает в shell-совместимой среде вроде MSYS2 / MinGW shell / Cygwin, потому что использует команды `mkdir`, `rm` и shell-цикл в `make test`
 
 ## Фичи проекта
 
