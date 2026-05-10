@@ -15,39 +15,38 @@ int main(int argc, char *argv[]) {
     int read_status;
     size_t line_number;
 
-    //Bad arguments
+    /* Check the command-line arguments */
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <file.csv>\n", argv[0]);
         return 1;
     }
     
-    //Opening file and checking if fopen succesfull
+    /* Open the CSV file */
     csv_file = fopen(argv[1], "r");
     if (csv_file == NULL) {
         perror("fopen");
         return 1;
     }
 
+    /* Use file size to choose the starting line-buffer size */
     file_size = get_file_size(csv_file);
 
-    //Size of file is bad
+    /* Stop here if file size cannot be determined */
     if (file_size == -1) {
         fprintf(stderr, "Failed to get size of file: %s\n", argv[1]);
         fclose(csv_file);
         return 1;
     }
 
-    /*Choosing initial capacity for custom string_t for parsing file
-      We using file size as metric for start capacity for strings to
-      optimize the number of calls of realloc */ 
-
+    /* Create one reusable line buffer for reading CSV lines */
     initial_capacity = choose_initial_capacity(file_size);
     if (!string_init(&line, initial_capacity)) {
         fprintf(stderr, "Failed to initialize line buffer\n");
-        fclose(csv_file);
+        fclose(csv_file); 
         return 1;
     }
 
+    /* Read the header line first */
     read_status = read_line_to_string(csv_file, &line);
     if (read_status < 0) {
         fprintf(stderr, "Failed to read header line\n");
@@ -63,7 +62,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    //Parsing header
+    /* Turn the header into column metadata */
     line_number = 1;
     if (!parse_header_line(&line, &matrix)) {
         fprintf(stderr, "Failed to parse header at line %zu\n", line_number);
@@ -72,7 +71,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    //Parsing Data
+    /* Read and parse all data rows */
     while ((read_status = read_line_to_string(csv_file, &line)) > 0) {
         line_number++;
 
@@ -85,7 +84,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    //Free dinamic memmory if file is corrupted or something goes wrong
+    /* Stop if reading fails somewhere in the middle of the file */
     if (read_status < 0) {
         fprintf(stderr, "Failed to read line %zu\n", line_number + 1);
         destroy_matrix(&matrix);
@@ -94,7 +93,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    //Resolving rows indexes: row[index] -> row[number] (using hashmap)
+    /* Resolve formula references after the whole matrix is parsed */
     if (!resolve_references(&matrix)) {
         fprintf(stderr, "Failed to resolve formula references\n");
         destroy_matrix(&matrix);
@@ -103,7 +102,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    //Creating DFS and evaluating formulas
+    /* Evaluate formulas by walking through their dependencies */
     if (!evaluate_matrix(&matrix)) {
         fprintf(stderr, "Failed to evaluate formulas\n");
         destroy_matrix(&matrix);
@@ -112,6 +111,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    /* Print the final CSV table to standard output */
     if (!print_matrix(stdout, &matrix)) {
         fprintf(stderr, "Failed to print matrix\n");
         destroy_matrix(&matrix);
@@ -120,6 +120,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    /* Free everything before exit */
     destroy_matrix(&matrix);
     string_destroy(&line);
     fclose(csv_file);
